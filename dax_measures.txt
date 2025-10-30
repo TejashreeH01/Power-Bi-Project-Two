@@ -1,0 +1,28 @@
+
+-- DAX measures to paste into your Power BI model
+
+Total Requests = COUNTROWS(service_requests)
+
+Open Requests = CALCULATE(COUNTROWS(service_requests), service_requests[status] = "open")
+
+Avg Resolution Hours = 
+AVERAGEX(
+    FILTER(service_requests, NOT(ISBLANK(service_requests[resolved_at]))),
+    DATEDIFF(service_requests[created_at], service_requests[resolved_at], HOUR)
+)
+
+Negative Sent % = 
+VAR neg = CALCULATE(COUNTROWS(social_posts), social_posts[sentiment_label] = "negative")
+VAR total = COUNTROWS(social_posts)
+RETURN IF(total = 0, 0, DIVIDE(neg, total))
+
+NeedScore (example normalized) = 
+-- This requires creating measures for normalized components; below is a simple example assuming precomputed NeedScore exists:
+SUM(need_scores[need_score])
+
+Avg Delay Minutes = AVERAGE(transit_events[delay_minutes])
+
+Pct OnTime Routes = 
+VAR total = COUNTROWS(transit_events)
+VAR ontime = CALCULATE(COUNTROWS(transit_events), transit_events[delay_minutes] <= 5)
+RETURN IF(total = 0, 0, DIVIDE(ontime, total))
